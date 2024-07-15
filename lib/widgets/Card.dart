@@ -1,19 +1,16 @@
-
-
 import 'package:flutter/material.dart';
-
 
 class CardItem extends StatelessWidget {
   const CardItem({
     Key? key,
     required this.heading,
     this.footerWidgets = const [],
-    this.subHeading,
+    this.subHeading = const [],
     this.supportingText,
   }) : super(key: key);
 
   final String heading;
-  final String? subHeading;
+  final List<Widget> subHeading;
   final String? supportingText;
   final List<Widget> footerWidgets;
 
@@ -28,10 +25,13 @@ class CardItem extends StatelessWidget {
                 children: [
                   Text(heading),
                   Spacer(),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.edit))
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.search))
                 ],
               ),
-              subtitle: subHeading != null ? Text(subHeading!) : null,
+              subtitle: Container(
+                alignment: Alignment.centerLeft,
+                child: Column(children: <Widget>[...subHeading]),
+              ),
               //trailing: Icon(Icons.favorite_outline),
             ),
             if (supportingText != null)

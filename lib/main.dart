@@ -1,5 +1,4 @@
-import 'package:daily_metric_app/bloc/TimerCubit.dart';
-import 'package:daily_metric_app/widgets/Card.dart';
+import 'package:daily_metric_app/bloc/metric/metric_bloc.dart';
 import 'package:daily_metric_app/widgets/CounterCard.dart';
 import 'package:daily_metric_app/widgets/MetricCard.dart';
 import 'package:daily_metric_app/widgets/TimerCard.dart';
@@ -52,17 +51,26 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(title)),
-        body: Column(
-          children: [
-            TimerCard(),
-            CounterCard(),
-            MetricCard(),
-          ],
+        body: BlocProvider(
+          create: (context) => MetricBloc(),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TimerCard(
+                  metricName: 'temporizador',
+                ),
+                CounterCard(
+                  metricName: 'contador',
+                ),
+                MetricCard(metricName: 'metrica'),
+              ],
+            ),
+          ),
         ),
-    floatingActionButton: FloatingActionButton(
+        /* floatingActionButton: FloatingActionButton(
       onPressed: () {},
       tooltip: 'Increment Counter',
       child: const Icon(Icons.add),
-    ),
+    ),*/
       );
 }

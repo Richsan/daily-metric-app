@@ -1,82 +1,198 @@
-import 'package:daily_metric_app/bloc/MetricCubit.dart';
+import 'package:daily_metric_app/bloc/NumberCubit.dart';
+import 'package:daily_metric_app/bloc/metric/metric_bloc.dart';
+import 'package:daily_metric_app/models/Metric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'Card.dart';
+import 'SavingProgress.dart';
 
 class MetricDialogBox extends StatefulWidget {
+  const MetricDialogBox({super.key, required this.metricName,});
+
+  final String metricName;
 
   @override
-  _MetricDialogBoxState createState() => _MetricDialogBoxState();
+  _MetricDialogBoxState createState() => _MetricDialogBoxState(metricName: metricName);
 }
 
+Future<DateTime?> showDateTimePicker({
+  required BuildContext context,
+  DateTime? initialDate,
+  DateTime? firstDate,
+  DateTime? lastDate,
+}) async {
+  initialDate ??= DateTime.now();
+  firstDate ??= initialDate.subtract(const Duration(days: 365 * 100));
+  lastDate ??= firstDate.add(const Duration(days: 365 * 200));
+
+  final DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: initialDate,
+    firstDate: firstDate,
+    lastDate: lastDate,
+  );
+
+  if (selectedDate == null) return null;
+
+  if (!context.mounted) return selectedDate;
+
+  final TimeOfDay? selectedTime = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.fromDateTime(initialDate),
+  );
+
+  return selectedTime == null
+      ? selectedDate
+      : DateTime(
+    selectedDate.year,
+    selectedDate.month,
+    selectedDate.day,
+    selectedTime.hour,
+    selectedTime.minute,
+  );
+}
+
+
 class _MetricDialogBoxState extends State<MetricDialogBox> {
-  late TextEditingController controller;
+  _MetricDialogBoxState({required this.metricName,});
+  late TextEditingController metricController;
+  late TextEditingController dateTimeController;
+  final String metricName;
 
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController();
+    metricController = TextEditingController();
+    dateTimeController = TextEditingController(text: DateTime.now().toString());
   }
 
   @override
   void dispose() {
     super.dispose();
-    controller.dispose();
+    metricController.dispose();
+    dateTimeController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Metric value:'),
-      content: TextField(
-        autofocus: true,
-        controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[0-9]+\.?[0-9]*'))],
-        decoration: InputDecoration(
-          hintText: 'input the metric value',
-        ),
+      content: Column(
+        children: [
+          TextField(
+            onTap: () async {
+              final newDate = await showDateTimePicker(context: context);
+              dateTimeController.text = newDate?.toString() ?? "";
+            },
+            controller: dateTimeController,
+          ),
+          TextField(
+            autofocus: true,
+            controller: metricController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^[0-9]+\.?[0-9]*'))
+            ],
+            decoration: InputDecoration(
+              hintText: 'input the metric value',
+            ),
+          ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(controller.text),
+          onPressed: () => Navigator.of(context).pop(Metric(
+            value: num.parse(metricController.text),
+            metricMoment: DateTime.parse(dateTimeController.text),
+            type: MetricType.Numeric,
+            name: metricName,
+          )),
           child: Text('submit'),
         ),
       ],
     );
   }
+
+
 }
 
 class MetricCard extends StatelessWidget {
-  const MetricCard({Key? key}) : super(key: key);
+  MetricCard({Key? key, required this.metricName,}) :
+        _savingProgress = MetricSavingProgress(metricName: metricName),
+        super(key: key);
 
+  final String metricName;
+  final Widget _savingProgress;
 
-  Future<String?> _openDialog(BuildContext context) =>
-      showDialog<String>(context: context,
-        builder: (context) => MetricDialogBox(),);
+  Future<Metric<num>?> _openDialog(BuildContext context) =>
+      showDialog<Metric<num>>(context: context,
+        builder: (context) => MetricDialogBox(metricName: metricName,),);
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (context) => MetricCubit(),
-        child: BlocBuilder<MetricCubit, num>(
+        create: (context) => NumberCubit(),
+        child: BlocBuilder<NumberCubit, num>(
           builder: (context, state) => CardItem(
-            heading: 'Metric Card',
-            subHeading: 'Last Value',
+            heading: metricName,
+            subHeading: [
+              _savingProgress,
+            ],
+            supportingText: 'Last Value',
             footerWidgets: [
               Text(state.toString()),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.add_box_outlined),
                 onPressed: () => _openDialog(context)
-                    .then((valueStr) => num.parse(valueStr!))
-                    .then((metricValue) => BlocProvider.of<MetricCubit>(context)
-                        .addMetric(metricValue)),
+                    .then((metric) => metric?.value ?? 0)
+                    .then(
+                  (metricValue) {
+                    BlocProvider.of<NumberCubit>(context)
+                        .addNumber(metricValue);
+                    BlocProvider.of<MetricBloc>(context).add(
+                      StoreMetric(
+                        metric: Metric<num>(
+                          name: metricName,
+                          type: MetricType.Numeric,
+                          value: metricValue,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
         ),
       );
 }
+
+Widget _circularProgressWithText({
+  required int percentage,
+  String? text}) {
+  var value = percentage / 100.0;
+  var size = 42.0;
+
+  text ??= '$percentage%';
+
+  return Stack(
+    alignment: AlignmentDirectional.center,
+    children: <Widget>[
+      Center(
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+            value: value,
+          ),
+        ),
+      ),
+      Center(child: Text(text)),
+    ],
+  );
+}
+
