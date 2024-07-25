@@ -1,21 +1,23 @@
-import 'package:daily_metric_app/bloc/NumberCubit.dart';
 import 'package:daily_metric_app/bloc/metric/metric_bloc.dart';
 import 'package:daily_metric_app/models/Metric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'Card.dart';
 import 'SavingProgress.dart';
 
 class MetricDialogBox extends StatefulWidget {
-  const MetricDialogBox({super.key, required this.metricName,});
+  const MetricDialogBox({
+    super.key,
+    required this.metricName,
+  });
 
   final String metricName;
 
   @override
-  _MetricDialogBoxState createState() => _MetricDialogBoxState(metricName: metricName);
+  _MetricDialogBoxState createState() =>
+      _MetricDialogBoxState(metricName: metricName);
 }
 
 Future<DateTime?> showDateTimePicker({
@@ -47,17 +49,19 @@ Future<DateTime?> showDateTimePicker({
   return selectedTime == null
       ? selectedDate
       : DateTime(
-    selectedDate.year,
-    selectedDate.month,
-    selectedDate.day,
-    selectedTime.hour,
-    selectedTime.minute,
-  );
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          selectedTime.hour,
+          selectedTime.minute,
+        );
 }
 
-
 class _MetricDialogBoxState extends State<MetricDialogBox> {
-  _MetricDialogBoxState({required this.metricName,});
+  _MetricDialogBoxState({
+    required this.metricName,
+  });
+
   late TextEditingController metricController;
   late TextEditingController dateTimeController;
   final String metricName;
@@ -115,34 +119,43 @@ class _MetricDialogBoxState extends State<MetricDialogBox> {
       ],
     );
   }
-
-
 }
 
 class MetricCard extends StatelessWidget {
-  MetricCard({Key? key, required this.metricName,}) :
-        _savingProgress = MetricSavingProgress(metricName: metricName),
+  MetricCard({
+    Key? key,
+    required this.metricName,
+  })  : _savingProgress = MetricSavingProgress(metricName: metricName),
         super(key: key);
 
   final String metricName;
   final Widget _savingProgress;
 
   Future<Metric<num>?> _openDialog(BuildContext context) =>
-      showDialog<Metric<num>>(context: context,
-        builder: (context) => MetricDialogBox(metricName: metricName,),);
+      showDialog<Metric<num>>(
+        context: context,
+        builder: (context) => MetricDialogBox(
+          metricName: metricName,
+        ),
+      );
 
   @override
-  Widget build(BuildContext context) => BlocProvider(
-        create: (context) => NumberCubit(),
-        child: BlocBuilder<NumberCubit, num>(
-          builder: (context, state) => CardItem(
+  Widget build(BuildContext context) => BlocBuilder<MetricBloc, MetricState>(
+        buildWhen: (previous, current) =>
+            current is StoredMetric &&
+            (current.metric?.type == MetricType.Numeric) &&
+            (current.metric?.name == metricName),
+        builder: (context, state) {
+          final num? currentValue = state.metric?.value;
+
+          return CardItem(
             heading: metricName,
             subHeading: [
               _savingProgress,
             ],
             supportingText: 'Last Value',
             footerWidgets: [
-              Text(state.toString()),
+              Text(currentValue.toString()),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.add_box_outlined),
@@ -150,8 +163,6 @@ class MetricCard extends StatelessWidget {
                     .then((metric) => metric?.value ?? 0)
                     .then(
                   (metricValue) {
-                    BlocProvider.of<NumberCubit>(context)
-                        .addNumber(metricValue);
                     BlocProvider.of<MetricBloc>(context).add(
                       StoreMetric(
                         metric: Metric<num>(
@@ -165,14 +176,12 @@ class MetricCard extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
+          );
+        },
       );
 }
 
-Widget _circularProgressWithText({
-  required int percentage,
-  String? text}) {
+Widget _circularProgressWithText({required int percentage, String? text}) {
   var value = percentage / 100.0;
   var size = 42.0;
 
@@ -195,4 +204,3 @@ Widget _circularProgressWithText({
     ],
   );
 }
-

@@ -26,7 +26,7 @@ class TimerCard extends StatelessWidget {
             subHeading: [
               _savingProgress,
             ],
-            supportingText: 'Last Value',
+            supportingText: 'Timer:',
             footerWidgets: [
               Text(state.seconds.toString()),
               Spacer(),
@@ -37,7 +37,7 @@ class TimerCard extends StatelessWidget {
                     StoreMetric(
                       metric: Metric<int>(
                         name: metricName,
-                        type: MetricType.Numeric,
+                        type: MetricType.Timer,
                         value: state.seconds,
                       ),
                     ),
