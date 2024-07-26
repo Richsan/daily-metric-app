@@ -1,11 +1,12 @@
-import 'package:daily_metric_app/bloc/TimerCubit.dart';
-import 'package:daily_metric_app/widgets/Card.dart';
+import 'package:daily_metric_app/bloc/timer_cubit.dart';
+import 'package:daily_metric_app/screens/metric_values.dart';
+import 'package:daily_metric_app/widgets/card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/metric/metric_bloc.dart';
-import '../models/Metric.dart';
-import 'SavingProgress.dart';
+import '../models/metric.dart';
+import 'saving_progress.dart';
 
 class TimerCard extends StatelessWidget {
   TimerCard({
@@ -22,6 +23,9 @@ class TimerCard extends StatelessWidget {
         create: (context) => TimerCubit(),
         child: BlocBuilder<TimerCubit, TimerState>(
           builder: (context, state) => CardItem(
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => MetricValuesScreen(metricName: metricName),
+            )),
             heading: metricName,
             subHeading: [
               _savingProgress,

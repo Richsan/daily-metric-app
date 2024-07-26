@@ -7,16 +7,20 @@ class CardItem extends StatelessWidget {
     this.footerWidgets = const [],
     this.subHeading = const [],
     this.supportingText,
+    this.onTap,
   }) : super(key: key);
 
   final String heading;
   final List<Widget> subHeading;
   final String? supportingText;
   final List<Widget> footerWidgets;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return GestureDetector(
+      onTap: onTap ?? () {},
+      child: Card(
         elevation: 4.0,
         child: Column(
           children: [
@@ -49,6 +53,8 @@ class CardItem extends StatelessWidget {
                 ),
               ),
           ],
-        ));
+        ),
+      ),
+    );
   }
 }

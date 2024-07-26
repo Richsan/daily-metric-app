@@ -1,11 +1,12 @@
 import 'package:daily_metric_app/bloc/metric/metric_bloc.dart';
-import 'package:daily_metric_app/models/Metric.dart';
+import 'package:daily_metric_app/models/metric.dart';
+import 'package:daily_metric_app/screens/metric_values.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'Card.dart';
-import 'SavingProgress.dart';
+import 'card.dart';
+import 'saving_progress.dart';
 
 class MetricDialogBox extends StatefulWidget {
   const MetricDialogBox({
@@ -149,6 +150,9 @@ class MetricCard extends StatelessWidget {
           final num? currentValue = state.metric?.value;
 
           return CardItem(
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => MetricValuesScreen(metricName: metricName),
+            )),
             heading: metricName,
             subHeading: [
               _savingProgress,
@@ -159,18 +163,10 @@ class MetricCard extends StatelessWidget {
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.add_box_outlined),
-                onPressed: () => _openDialog(context)
-                    .then((metric) => metric?.value ?? 0)
-                    .then(
-                  (metricValue) {
+                onPressed: () => _openDialog(context).then(
+                  (metric) {
                     BlocProvider.of<MetricBloc>(context).add(
-                      StoreMetric(
-                        metric: Metric<num>(
-                          name: metricName,
-                          type: MetricType.Numeric,
-                          value: metricValue,
-                        ),
-                      ),
+                      StoreMetric(metric: metric!),
                     );
                   },
                 ),

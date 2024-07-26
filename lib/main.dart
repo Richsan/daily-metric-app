@@ -1,7 +1,7 @@
 import 'package:daily_metric_app/bloc/metric/metric_bloc.dart';
-import 'package:daily_metric_app/widgets/CounterCard.dart';
-import 'package:daily_metric_app/widgets/MetricCard.dart';
-import 'package:daily_metric_app/widgets/TimerCard.dart';
+import 'package:daily_metric_app/widgets/counter_card.dart';
+import 'package:daily_metric_app/widgets/metric_card.dart';
+import 'package:daily_metric_app/widgets/timer_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
