@@ -1,3 +1,4 @@
+import 'package:daily_metric_app/adapters/date.dart';
 import 'package:daily_metric_app/screens/metric_values.dart';
 import 'package:daily_metric_app/widgets/card.dart';
 import 'package:flutter/material.dart';
@@ -35,8 +36,10 @@ class CounterCard extends StatelessWidget {
           ],
           supportingText: 'Last Value',
           footerWidgets: [
-            Text(value?.toLocal().toString() ?? ''),
-            Spacer(),
+            Text(value?.toLocal().toDateStr() ?? ''),
+            SizedBox(
+              width: 1,
+            ),
             IconButton(
               icon: const Icon(Icons.add_circle_outline_outlined),
               onPressed: () {
@@ -50,7 +53,7 @@ class CounterCard extends StatelessWidget {
                   ),
                 );
               },
-            )
+            ),
           ],
         );
       });

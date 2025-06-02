@@ -4,6 +4,7 @@ import 'package:daily_metric_app/widgets/metric_card.dart';
 import 'package:daily_metric_app/widgets/timer_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_draggable_gridview/flutter_draggable_gridview.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,24 +54,45 @@ class MyHomePage extends StatelessWidget {
         appBar: AppBar(title: Text(title)),
         body: BlocProvider(
           create: (context) => MetricBloc(),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                TimerCard(
+          child: DraggableGridViewBuilder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: MediaQuery.of(context).size.width /
+                  (MediaQuery.of(context).size.height / 2),
+            ),
+            dragCompletion: (list, beforeIndex, afterIndex) {},
+            children: [
+              DraggableGridItem(
+                isDraggable: true,
+                child: TimerCard(
                   metricName: 'temporizador',
                 ),
-                CounterCard(
+              ),
+              DraggableGridItem(
+                isDraggable: true,
+                child: CounterCard(
                   metricName: 'contador',
                 ),
-                MetricCard(metricName: 'metrica'),
-              ],
-            ),
+              ),
+              DraggableGridItem(
+                isDraggable: true,
+                child: MetricCard(metricName: 'metrica'),
+              ),
+            ],
+            dragFeedback: (list, index) {
+              print(list);
+              return PlaceHolderWidget(
+                child: Container(
+                  color: Colors.red,
+                ),
+              );
+            },
           ),
-        ),
-        /* floatingActionButton: FloatingActionButton(
+          /* floatingActionButton: FloatingActionButton(
       onPressed: () {},
       tooltip: 'Increment Counter',
       child: const Icon(Icons.add),
     ),*/
+        ),
       );
 }

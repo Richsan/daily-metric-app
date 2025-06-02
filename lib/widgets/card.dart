@@ -22,37 +22,56 @@ class CardItem extends StatelessWidget {
       onTap: onTap ?? () {},
       child: Card(
         elevation: 4.0,
-        child: Column(
-          children: [
-            ListTile(
-              title: Row(
-                children: [
-                  Text(heading),
-                  Spacer(),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.search))
-                ],
-              ),
-              subtitle: Container(
-                alignment: Alignment.centerLeft,
-                child: Column(children: <Widget>[...subHeading]),
-              ),
-              //trailing: Icon(Icons.favorite_outline),
-            ),
-            if (supportingText != null)
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                alignment: Alignment.centerLeft,
-                child: Text(supportingText!),
-              ),
-            Divider(),
-            if (footerWidgets.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: <Widget>[...footerWidgets],
+        child: ConstrainedBox(
+          constraints:
+              BoxConstraints(minHeight: 20, maxHeight: 50, minWidth: 200),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListTile(
+                  title: Container(
+                    constraints: BoxConstraints(maxHeight: 100),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(heading),
+                        Spacer(),
+                        IconButton(
+                            onPressed: () {}, icon: const Icon(Icons.search))
+                      ],
+                    ),
+                  ),
+                  subtitle: Container(
+                    constraints: BoxConstraints(maxHeight: 100),
+                    alignment: Alignment.centerLeft,
+                    child: Column(children: <Widget>[...subHeading]),
+                  ),
+                  //trailing: Icon(Icons.favorite_outline),
                 ),
               ),
-          ],
+              if (supportingText != null)
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    alignment: Alignment.centerLeft,
+                    child: Text(supportingText!),
+                  ),
+                ),
+              Divider(
+                height: 1,
+              ),
+              if (footerWidgets.isNotEmpty)
+                Expanded(
+                  child: Container(
+                    constraints: BoxConstraints(maxHeight: 5),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[...footerWidgets]),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
